@@ -6,6 +6,9 @@ function fsSurf2BV(subjName, varargin)
 %
 %jens.schwarzbach@unitn.it
 %
+%modified by Colleen Schneider (colleen_schneider@urmc.rochester.edu) to
+% color curvatures
+%
 %With default options creates BrainVoyager files for a given participant in
 %subdirectory <subjName>:
 %brain.vmr
@@ -76,7 +79,7 @@ if ~isfield(Cfg, 'surfaceTypes'), Cfg.surfaceTypes = {'inflated', 'pial', 'smoot
 % NOTE: change in atlas name from BA.annot to BA_exvivo.annot in latest
 % version of FS (11/20/17 JP)
 % if ~isfield(Cfg, 'atlas'), Cfg.atlas = {'BA.annot', 'aparc.a2009s.annot', 'aparc.DKTatlas40.annot', 'Yeo2011_7Networks_N1000.annot', 'Yeo2011_17Networks_N1000.annot'}; else end;
-if ~isfield(Cfg, 'atlas'), Cfg.atlas = {'BA_exvivo.annot', 'aparc.a2009s.annot', 'aparc.DKTatlas.annot'}; else end;
+if ~isfield(Cfg, 'atlas'), Cfg.atlas = {'BA_exvivo.annot', 'aparc.a2009s.annot', 'aparc.DKTatlas.annot','benson14.annot','wang15_mplbl.annot'}; else end;
 %; 'BA.annot', Note: 'PALS_B12_Brodmann.annot' fails
 if ~isfield(Cfg, 'nSubClusters'), Cfg.nSubClusters = 0; else end;%for segmenting each labeled area into spatially distinct clusters
 
@@ -157,9 +160,7 @@ vmr.VMRData = uint8(T1f);
 vmr_fn = fullfile(Cfg.bvDir, [subjName,'-brain-FS.vmr']);
 fprintf(1, 'SAVING %s\n', vmr_fn);
 vmr.SaveAs(vmr_fn);
-vmr.ClearObject;
 fprintf(1, '\n');
-
 
 %--------------------------------------------------------------------------
 %CONVERT SURFACES
@@ -177,6 +178,10 @@ for iSrf = 1:numel(Cfg.surfaceTypes)
         outName = fullfile(Cfg.bvDir, [subjName, '_', strHemi, '_', Cfg.surfaceTypes{iSrf}, '.srf']);
         fprintf('WRITING %s (%d vertices)\n\n\n', outName, size(v, 1));
         surfing_write(outName, v, f);
+        srf = BVQXfile(outName);
+        srf.ConcaveRGBA = [0.470588 0.470588 0.470588 1];
+        srf.ConvexRGBA = [0.784314 0.784314 0.784314 1];
+        srf.SaveAs(outName);
         
     end
 end
